@@ -118,18 +118,6 @@ class modélisation_poutre():
         plt.legend()
         plt.show()
 
-        print("Les déflexions maximales:", self.Def_max_y1 + self.Def_max_y3)
-
-
-
-
-
-
-
-
-
-
-
 
 result = modélisation_poutre()
 # print(result.Show_Deflection())
