@@ -13,7 +13,7 @@ from scipy.optimize import curve_fit
 class modélisation_poutre():
     """Classe générant le mode fondamentale de la poutre
     """
-    def __init__(self, longueur=0.3, largeur=0.05, epaisseur=0.001, Young=2.7*10**11, load=-2):
+    def __init__(self, longueur=0.3, largeur=0.05, epaisseur=0.001, Young=2.7*10**11, load=-2, poid=-0.1):
         """Initialise les variables utilisés pour la résolution
 
         Args:\n
@@ -22,12 +22,14 @@ class modélisation_poutre():
             epaisseur (int): Épaisseur de la lame en mètre.\n
             Young (int): Module de Young de la lame en pascal.\n
             load (int): Charge sur la lame, doit être négatif pour bien simuler notre situation.\n
+            poid (int): Poid de la lame
         """
         self.longueur = longueur
         self.largeur = largeur
         self.epaisseur = epaisseur
         self.young = Young
         self.load = load
+        self.poid = poid
 
         
         self.I = (1/12) * self.epaisseur**3 * self.largeur
@@ -37,13 +39,13 @@ class modélisation_poutre():
         self.x = np.linspace(0, self.longueur)
         self.y1 = (self.load * self.x**2)/(6*self.young * self.I) * (3*self.a - self.x)  #Charge milieu de la poutre
         self.y2 = (self.load * self.x**2)/(6*self.young * self.I) * (3*self.longueur - self.x)  #Charge au bout de la poutre
-        self.y3 = (self.load * self.x**2)/(24 * self.young * self.I) * (self.x**2 + 6 * self.load**2 - 4 * self.load * self.x)  #Charge répartie uniformément sur poutre
+        self.y3 = (self.poid * self.x**2)/(24 * self.young * self.I) * (self.x**2 + 6 * self.poid**2 - 4 * self.poid * self.x)  #Charge répartie uniformément sur poutre
 
 
         #Déflexion maximale
         self.Def_max_y1 = round((self.load * self.longueur**3)/(3 * self.young * self.I), 5)
         self.Def_max_y2 = round((self.load * self.a**2)/(6*self.young * self.I) * (3*self.longueur - self.a), 5)
-        self.Def_max_y3 = round((self.load * self.longueur)/(8*self.young * self.I), 5)
+        self.Def_max_y3 = round((self.poid * self.longueur)/(8*self.young * self.I), 5)
         
     def Show_Deflection(self):
         """Montre le graphique du mode principal.
@@ -99,7 +101,38 @@ class modélisation_poutre():
         plt.legend()
         plt.show()
 
+    def Ideal_Beam(self):
+        """Fonction qui montre la poutre avec se propre masse, sans sa propre masse et avec la correction linéaire.
+        """
+        Ideal = self.y1
+        Ideal_approx = (self.load * self.a**2)/(6*self.young * self.I) * (3*self.x - self.a)
+
+        Ideal_mass_beam = self.y1 + self.y3
+        Ideal_mass_beam_approx = (self.load * self.a**2)/(6*self.young * self.I) * (3*self.x - self.a) + self.y3
+
+        plt.plot(self.x, Ideal, "r--", label="Poutre Idéale")
+        plt.plot(self.x, Ideal_approx, "r", label="Approx Poutre idéale")
+        plt.plot(self.x, Ideal_mass_beam, "b--", label="Poutre idéale avec masse")
+        plt.plot(self.x, Ideal_mass_beam_approx, "b", label="Approx Poutre idéale avec masse")
+        plt.grid()
+        plt.legend()
+        plt.show()
+
+        print("Les déflexions maximales:", self.Def_max_y1 + self.Def_max_y3)
+
+
+
+
+
+
+
+
+
+
+
+
 result = modélisation_poutre()
-print(result.Show_Deflection())
-print(result.Max_Deflection())
-print(result.Charge_Milieu_Poutre())
+# print(result.Show_Deflection())
+# print(result.Max_Deflection())
+# print(result.Charge_Milieu_Poutre())
+print(result.Ideal_Beam())
